@@ -136,8 +136,7 @@ pcsc.on('reader', (reader) => {
 
             });
 
-        }
-        else if ((changes & reader.SCARD_STATE_PRESENT) && (status.state & reader.SCARD_STATE_PRESENT)) {
+        } else if ((changes & reader.SCARD_STATE_PRESENT) && (status.state & reader.SCARD_STATE_PRESENT)) {
 
             console.log("card inserted");
 
