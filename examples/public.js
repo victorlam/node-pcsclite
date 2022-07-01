@@ -1,12 +1,12 @@
 "use strict";
 
-const pcsclite = require('../lib/pcsclite');
+const pcsclite = require('@pokusew/pcsclite');
 const {
 	SCARD_SCOPE_USER,
 	SCARD_SCOPE_TERMINAL,
 	SCARD_SCOPE_SYSTEM,
 	SCARD_SCOPE_GLOBAL,
-} = require('../lib/constants');
+} = require('@pokusew/pcsclite/lib/constants');
 
 
 // const pcsc = pcsclite(); // without options (scope defaults to SCARD_SCOPE_SYSTEM)

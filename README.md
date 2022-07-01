@@ -1,7 +1,8 @@
 # node-pcsclite
 
 [![npm](https://img.shields.io/npm/v/@pokusew/pcsclite.svg)](https://www.npmjs.com/package/@pokusew/pcsclite)
-[![node-pcsclite channel on discord](https://img.shields.io/badge/discord-join%20chat-61dafb.svg)](https://discord.gg/bg3yazg)
+[![build status](https://img.shields.io/github/workflow/status/pokusew/node-pcsclite/CI?logo=github)](https://github.com/pokusew/node-pcsclite/actions?query=workflow%3ACI)
+[![node-pcsclite channel on discord](https://img.shields.io/badge/discord-join%20chat-61dafb.svg?logo=discord&logoColor=white)](https://discord.gg/bg3yazg)
 
 Bindings over pcsclite to access Smart Cards. It works in **Linux**, **macOS** and **Windows**.
 
@@ -40,6 +41,9 @@ Bindings over pcsclite to access Smart Cards. It works in **Linux**, **macOS** a
   - [Are prebuilt binaries provided?](#are-prebuilt-binaries-provided)
   - [Disabling drivers to make pcsclite working on Linux](#disabling-drivers-to-make-pcsclite-working-on-linux)
   - [Which Node.js versions are supported?](#which-nodejs-versions-are-supported)
+  - [Can I use this library in my React Native app?](#can-i-use-this-library-in-my-react-native-app)
+- [Frequent errors](#frequent-errors)
+  - [Error: Cannot find module '../build/Release/pcsclite.node'](#error-cannot-find-module-buildreleasepcsclitenode)
 - [License](#license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -64,7 +68,7 @@ Bindings over pcsclite to access Smart Cards. It works in **Linux**, **macOS** a
     On **macOS** and **Windows** you **don't have to install** anything,
     **pcsclite API** is provided by the OS.
     
-    On Linux/UNIX you'd probably need to install pcsclite library and deamon**.
+    On Linux/UNIX you'd probably need to install pcsclite library and daemon**.
 
     > For example, in Debian/Ubuntu:
     > ```bash
@@ -132,8 +136,7 @@ pcsc.on('reader', (reader) => {
 
             });
 
-        }
-        else if ((changes & reader.SCARD_STATE_PRESENT) && (status.state & reader.SCARD_STATE_PRESENT)) {
+        } else if ((changes & reader.SCARD_STATE_PRESENT) && (status.state & reader.SCARD_STATE_PRESENT)) {
 
             console.log("card inserted");
 
@@ -299,13 +302,76 @@ That means that cross-compilation is not possible by default. If you want to use
 
 ### Disabling drivers to make pcsclite working on Linux
 
-TODO document
+In case there is another driver blocking the usb bus, you won't be able to access the NFC reader until you disable it. First, plug in your reader and check, which driver is being used:
+```console
+$ lsusb -t
+/:  Bus 01.Port 1: Dev 1, Class=root_hub, Driver=xhci_hcd/12p, 480M
+    |__ Port 3: Dev 6, If 0, Class=Chip/SmartCard, Driver=pn533, 12M
+        ...
+```
+In my case, there is a `pn533` driver loaded by default. Now find the dependency tree of that driver:
+```console
+$ lsmod | grep pn533
+Module                  Size  Used by
+pn533_usb              20480  0
+pn533                  45056  1 pn533_usb
+nfc                   131072  1 pn533
 
-in the meantime see [#10](https://github.com/pokusew/node-pcsclite/issues/10)
+```
+We see, that there are drivers `nfc`, `pn533` and `pn533_usb` we need to disable. Create file in `/etc/modprobe.d/` with the following content:
+```console
+$ cat /etc/modprobe.d/nfc-blacklist.conf
+blacklist pn533_usb
+blacklist pn533
+blacklist nfc
+```
+After reboot, there will be no driver blocking the usb bus anymore, so we can finally enable and start the pscs deamon:
+```
+# systemctl enable pcscd
+# systemctl start pcscd
+```
 
 ### Which Node.js versions are supported?
 
 @pokusew/pcsclite officially supports the following Node.js versions: **8.x, 9.x, 10.x, 11.x, 12.x, 13.x**.
+
+### Can I use this library in my React Native app?
+
+Short answer: **NO**
+
+Explanation: **Mobile support is virtually impossible** because @pokusew/pcsclite uses **Node Native Modules**
+to access system **PC/SC API**. So the **Node.js runtime and PC/SC API** are required for @pokusew/pcsclite to run.
+That makes it possible to use it on the most of OS (Windows, macOS, Linux) **directly in Node.js**
+or in **Electron.js and NW.js** desktop apps. On the other hand, these requirements are not normally met on mobile devices.
+On top of that, React Native does not contain any Node.js runtime.
+
+
+## Frequent errors
+
+### Error: Cannot find module '../build/Release/pcsclite.node'
+
+@pokusew/pcsclite uses **Node Native Modules** (Node.js C++ Addon) to access PC/SC API (pcsclite).
+The Node.js native C++ addon is built during installation via [node-gyp](https://github.com/nodejs/node-gyp)
+(see package.json > scripts > [install](https://github.com/pokusew/node-pcsclite/blob/master/package.json#L37)).
+When you see the error `Cannot find module '../build/Release/pcsclite.node'`, something probably
+**went wrong during the installation**.
+
+Follow the steps below to resolve your problem:
+1. If **there are any errors** in the output of the `npm install` resp. `yarn install`,
+    * **ensure you meet all the requirements** described in the [Installation](#installation) section of this README.
+        Then try reinstalling @pokusew/pcsclite (npm uninstall / yarn remove and then npm install / yarn add).
+    * **If the problem persists**, [open a new issue](https://github.com/pokusew/node-pcsclite/issues/new)
+        and be sure to include the output of the `npm install` resp. `yarn install`
+        and the details about your platform, OS, Node.js version and npm/yarn version.
+2. If **there are no errors** during the installation,
+    * then try reinstalling @pokusew/pcsclite (npm uninstall / yarn remove and then npm install / yarn add).
+    * If it does not help, then examine the contents of the folder `node_modules/@pokusew/pcsclite` in your project
+        (in case you installed @pokusew/pcsclite as a dependency). There should be a `build` folder with
+        a `Release` folder inside. In the `Release` folder, there should be a `pcsclite.node` file.
+        It is possible that this file is somewhere else. Whether you find the file somewhere or not,
+        please [open a new issue](https://github.com/pokusew/node-pcsclite/issues/new)
+        and describe the problem and be sure to include the details
+        about your platform, OS, Node.js version and npm/yarn version.
 
 
 ## License
