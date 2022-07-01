@@ -1,6 +1,6 @@
 {
-  "name": "@pokusew/pcsclite",
-  "version": "0.6.0",
+  "name": "@alba/pcsclite",
+  "version": "0.6.1",
   "description": "Bindings over PC/SC to access Smart Cards",
   "keywords": [
     "nfc",
@@ -8,29 +8,25 @@
     "pcsclite",
     "smartcards"
   ],
-  "homepage": "https://github.com/pokusew/node-pcsclite#readme",
+  "homepage": "https://github.com/alba-ado/node-pcsclite#readme",
   "bugs": {
-    "url": "https://github.com/pokusew/node-pcsclite/issues"
+    "url": "https://github.com/alba-ado/node-pcsclite/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/pokusew/node-pcsclite.git"
+    "url": "git+https://github.com/alba-ado/node-pcsclite.git"
   },
   "license": "ISC",
-  "author": {
-    "name": "Santiago Gimeno",
-    "email": "santiago.gimeno@gmail.com",
-    "url": "https://github.com/santigimeno"
-  },
+  "author": "Santiago Gimeno <santiago.gimeno@gmail.com> (https://github.com/santigimeno)",
   "contributors": [
-    {
-      "name": "Martin Endler",
-      "url": "https://github.com/pokusew"
-    }
+    "Martin Endler (https://github.com/pokusew)",
+    "Ali Devrim OGUZ (https://github.com/devrim-oguz)"
   ],
   "main": "lib/pcsclite.js",
   "types": "index.d.ts",
   "directories": {
+    "example": "examples",
+    "lib": "lib",
     "test": "test"
   },
   "scripts": {

@@ -1,16 +1,9 @@
 "use strict";
 
 const pcsclite = require('../lib/pcsclite');
-const {
-	SCARD_SCOPE_USER,
-	SCARD_SCOPE_TERMINAL,
-	SCARD_SCOPE_SYSTEM,
-	SCARD_SCOPE_GLOBAL,
-} = require('../lib/constants');
 
 
-// const pcsc = pcsclite(); // without options (scope defaults to SCARD_SCOPE_SYSTEM)
-const pcsc = pcsclite({ scope: SCARD_SCOPE_USER }); // overwriting default scope
+const pcsc = pcsclite();
 
 pcsc.on('reader', (reader) => {
 
@@ -46,7 +39,8 @@ pcsc.on('reader', (reader) => {
 
 			});
 
-		} else if ((changes & reader.SCARD_STATE_PRESENT) && (status.state & reader.SCARD_STATE_PRESENT)) {
+		}
+		else if ((changes & reader.SCARD_STATE_PRESENT) && (status.state & reader.SCARD_STATE_PRESENT)) {
 
 			console.log("card inserted");
 
